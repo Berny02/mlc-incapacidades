@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { getColaboradores, deleteColaborador } from '../../services/colaboradores'
+import ConfirmModal from '../../components/ui/ConfirmModal'
 
 export default function ColaboradoresList() {
   const navigate = useNavigate()
@@ -9,6 +10,7 @@ export default function ColaboradoresList() {
   const [busqueda, setBusqueda] = useState('')
   const [loading, setLoading] = useState(true)
   const [eliminandoId, setEliminandoId] = useState(null)
+  const [confirmando, setConfirmando] = useState(null) // colaborador a eliminar
 
   useEffect(() => {
     cargar()
@@ -25,12 +27,9 @@ export default function ColaboradoresList() {
     }
   }
 
-  async function handleEliminar(colaborador) {
-    const confirmar = window.confirm(
-      `¿Eliminar a ${colaborador.nombre}? Esta acción no se puede deshacer.`
-    )
-    if (!confirmar) return
-
+  async function handleEliminar() {
+    const colaborador = confirmando
+    setConfirmando(null)
     setEliminandoId(colaborador.id)
     try {
       await deleteColaborador(colaborador.id)
@@ -61,6 +60,16 @@ export default function ColaboradoresList() {
 
   return (
     <div>
+      {confirmando && (
+        <ConfirmModal
+          titulo="Eliminar colaborador"
+          mensaje={`¿Estás seguro de que deseas eliminar a ${confirmando.nombre}? Esta acción no se puede deshacer.`}
+          labelConfirmar="Sí, eliminar"
+          onConfirmar={handleEliminar}
+          onCancelar={() => setConfirmando(null)}
+        />
+      )}
+
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-text">Colaboradores</h2>
@@ -121,7 +130,7 @@ export default function ColaboradoresList() {
                           Editar
                         </button>
                         <button
-                          onClick={() => handleEliminar(c)}
+                          onClick={() => setConfirmando(c)}
                           disabled={eliminandoId === c.id}
                           className="text-muted hover:text-danger text-xs font-medium transition-colors disabled:opacity-40"
                         >
