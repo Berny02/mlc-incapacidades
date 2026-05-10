@@ -1,21 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
 export default function Login() {
-  const { signIn } = useAuth()
+  const { signIn, session } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Redirige cuando el estado de sesión se actualiza realmente en React
+  // evita la race condition de navegar antes de que session esté seteado
+  useEffect(() => {
+    if (session) navigate('/dashboard', { replace: true })
+  }, [session, navigate])
 
   async function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
     try {
       await signIn(email, password)
-      navigate('/dashboard')
+      // La navegación la maneja el useEffect de arriba cuando session cambia
     } catch (err) {
       toast.error(err.message ?? 'Error al iniciar sesión')
     } finally {
