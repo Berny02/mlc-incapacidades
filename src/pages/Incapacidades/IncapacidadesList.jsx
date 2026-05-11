@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { getIncapacidades } from '../../services/incapacidades'
 import { calcularDias } from '../../utils/calculadora'
 import StatusBadge from '../../components/shared/StatusBadge'
+import Semaforo from '../../components/shared/Semaforo'
 
 const TIPOS_LABEL = {
   enfermedad_general:   'Enfermedad General',
@@ -106,6 +107,7 @@ export default function IncapacidadesList() {
                   <th className="pb-3 pr-4 font-medium">Fecha inicio</th>
                   <th className="pb-3 pr-4 font-medium text-right">Días</th>
                   <th className="pb-3 pr-4 font-medium">Estado</th>
+                  <th className="pb-3 pr-4 font-medium">Alerta</th>
                   <th className="pb-3 font-medium">Acciones</th>
                 </tr>
               </thead>
@@ -131,6 +133,9 @@ export default function IncapacidadesList() {
                       </td>
                       <td className="py-3 pr-4">
                         <StatusBadge estado={i.estado} />
+                      </td>
+                      <td className="py-3 pr-4">
+                        <Semaforo dias={dias} mostrarLabel />
                       </td>
                       <td className="py-3">
                         <div className="flex items-center gap-3">
