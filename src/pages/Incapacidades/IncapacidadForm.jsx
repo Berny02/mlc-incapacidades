@@ -5,6 +5,7 @@ import { getIncapacidadById, createIncapacidad, updateIncapacidad } from '../../
 import { getColaboradores } from '../../services/colaboradores'
 import { calcularDias, calcularValorEstimado } from '../../utils/calculadora'
 import { useAuth } from '../../context/AuthContext'
+import FileUploader from '../../components/shared/FileUploader'
 
 const CAMPOS_INICIALES = {
   colaborador_id: '',
@@ -30,6 +31,7 @@ export default function IncapacidadForm() {
   const esEdicion = Boolean(id)
 
   const [form, setForm] = useState(CAMPOS_INICIALES)
+  const [soportePath, setSoportePath] = useState(null)
   const [colaboradores, setColaboradores] = useState([])
   const [loading, setLoading] = useState(true)
   const [guardando, setGuardando] = useState(false)
@@ -53,6 +55,7 @@ export default function IncapacidadForm() {
             origen:         inc.origen ?? '',
             observaciones:  inc.observaciones ?? '',
           })
+          setSoportePath(inc.soporte_url ?? null)
         }
       } catch {
         toast.error('Error al cargar datos')
@@ -296,6 +299,23 @@ export default function IncapacidadForm() {
             )}
           </div>
         )}
+
+        {/* Soporte médico */}
+        <div>
+          <label className="mb-2 block text-sm font-medium text-text">Soporte médico</label>
+          {esEdicion ? (
+            <FileUploader
+              colaboradorId={form.colaborador_id}
+              incapacidadId={id}
+              soportePath={soportePath}
+              onActualizar={setSoportePath}
+            />
+          ) : (
+            <p className="text-sm text-muted rounded-lg border border-dashed border-muted/30 px-4 py-3">
+              Podrás adjuntar el soporte desde el detalle de la incapacidad después de crearla.
+            </p>
+          )}
+        </div>
 
         {/* Origen */}
         <div>

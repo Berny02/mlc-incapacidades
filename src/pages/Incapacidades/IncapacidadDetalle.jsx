@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { getIncapacidadById } from '../../services/incapacidades'
 import { calcularDias } from '../../utils/calculadora'
 import StatusBadge from '../../components/shared/StatusBadge'
+import FileUploader from '../../components/shared/FileUploader'
 
 const TIPOS_LABEL = {
   enfermedad_general: 'Enfermedad General',
@@ -108,23 +109,15 @@ export default function IncapacidadDetalle() {
         )}
       </div>
 
-      {/* Sección de documentos — placeholder para Tarea 2.2 */}
+      {/* Sección de documentos */}
       <div className="card">
-        <h3 className="mb-3 font-semibold text-text">Soporte médico</h3>
-        {inc.soporte_url ? (
-          <a
-            href={inc.soporte_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary inline-flex items-center gap-2"
-          >
-            Ver documento
-          </a>
-        ) : (
-          <p className="text-sm text-muted">
-            Sin soporte adjunto · La subida de archivos se implementa en la Tarea 2.2
-          </p>
-        )}
+        <h3 className="mb-4 font-semibold text-text">Soporte médico</h3>
+        <FileUploader
+          colaboradorId={inc.colaborador_id}
+          incapacidadId={inc.id}
+          soportePath={inc.soporte_url}
+          onActualizar={(path) => setInc((prev) => ({ ...prev, soporte_url: path }))}
+        />
       </div>
 
       {/* Historial de estados — placeholder para Tarea 2.3 */}
