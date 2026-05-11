@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { getIncapacidadById, createIncapacidad, updateIncapacidad } from '../../services/incapacidades'
 import { getColaboradores } from '../../services/colaboradores'
-import { calcularDias } from '../../utils/calculadora'
+import { calcularDias, calcularValorEstimado } from '../../utils/calculadora'
 import { useAuth } from '../../context/AuthContext'
 
 const CAMPOS_INICIALES = {
@@ -113,6 +113,11 @@ export default function IncapacidadForm() {
   }
 
   const dias = calcularDias(form.fecha_inicio, form.fecha_fin)
+
+  const colaboradorSeleccionado = colaboradores.find((c) => c.id === form.colaborador_id)
+  const calculo = dias > 0 && colaboradorSeleccionado?.salario_base
+    ? calcularValorEstimado(dias, colaboradorSeleccionado.salario_base)
+    : null
 
   const colsFiltrados = colaboradores.filter((c) =>
     c.nombre.toLowerCase().includes(busquedaCol.toLowerCase()) ||
@@ -235,16 +240,59 @@ export default function IncapacidadForm() {
           </div>
         </div>
 
-        {/* Días calculados */}
+        {/* Panel financiero en tiempo real */}
         {dias > 0 && (
-          <div className="flex items-center gap-2 rounded-lg bg-accent/10 border border-accent/20 px-4 py-2">
-            <span className="text-sm text-muted">Días de incapacidad:</span>
-            <span className="font-mono text-lg font-semibold text-accent">{dias}</span>
-            {dias > 180 && (
-              <span className="ml-2 text-xs text-danger">⚑ Supera 180 días — traslado a AFP</span>
-            )}
-            {dias >= 90 && dias <= 180 && (
-              <span className="ml-2 text-xs text-warning">⚑ Revisar umbrales de alerta</span>
+          <div className="rounded-lg border border-muted/20 bg-bg overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-muted/10">
+              <span className="text-sm font-medium text-text">Estimación de pago</span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted">
+                  <span className="font-mono text-accent font-semibold">{dias}</span> días
+                </span>
+                {calculo?.pasaAfp && (
+                  <span className="text-xs font-medium text-danger bg-danger/10 border border-danger/30 rounded px-2 py-0.5">
+                    ⚑ AFP día 181+
+                  </span>
+                )}
+                {!calculo?.pasaAfp && dias >= 90 && (
+                  <span className="text-xs font-medium text-warning bg-warning/10 border border-warning/30 rounded px-2 py-0.5">
+                    ⚑ Alerta día {dias >= 150 ? '150' : dias >= 120 ? '120' : '90'}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {calculo ? (
+              <div className="divide-y divide-muted/10">
+                <FilaCalculo
+                  label="Días 1–2 · Empresa (100% IBC)"
+                  valor={calculo.desglose.empresa}
+                  sublabel={`IBC diario: ${cop(calculo.ibcDiario)}`}
+                />
+                {dias >= 3 && (
+                  <FilaCalculo
+                    label={`Días 3–${Math.min(dias, 90)} · EPS (66.67% IBC)`}
+                    valor={dias <= 90
+                      ? calculo.desglose.eps
+                      : calcularValorEstimado(Math.min(dias, 90), colaboradorSeleccionado.salario_base).desglose.eps
+                    }
+                  />
+                )}
+                {dias >= 91 && (
+                  <FilaCalculo
+                    label={`Días 91–${Math.min(dias, 180)} · EPS (50% IBC)`}
+                    valor={calculo.desglose.eps - calcularValorEstimado(90, colaboradorSeleccionado.salario_base).desglose.eps}
+                  />
+                )}
+                <div className="flex items-center justify-between px-4 py-3 bg-accent/5">
+                  <span className="text-sm font-semibold text-text">Total estimado</span>
+                  <span className="font-mono font-bold text-accent text-base">{cop(calculo.valorTotal)}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="px-4 py-3 text-sm text-muted">
+                Selecciona un colaborador para ver la estimación de pago
+              </p>
             )}
           </div>
         )}
@@ -288,6 +336,22 @@ export default function IncapacidadForm() {
           </button>
         </div>
       </form>
+    </div>
+  )
+}
+
+function cop(valor) {
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(valor)
+}
+
+function FilaCalculo({ label, valor, sublabel }) {
+  return (
+    <div className="flex items-center justify-between px-4 py-2.5">
+      <div>
+        <span className="text-sm text-muted">{label}</span>
+        {sublabel && <p className="text-xs text-muted/60 mt-0.5">{sublabel}</p>}
+      </div>
+      <span className="font-mono text-sm text-text">{cop(valor)}</span>
     </div>
   )
 }
