@@ -38,7 +38,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="px-6 py-4 border-t border-muted/10">
-        <p className="text-xs text-muted">v1.0.0</p>
+        <p className="text-xs text-muted">v3.0.0</p>
       </div>
     </aside>
   )

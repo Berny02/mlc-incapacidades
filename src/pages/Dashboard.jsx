@@ -127,7 +127,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <KpiCard
           label="Incapacidades activas"
           valor={kpis.activas}
@@ -156,9 +156,9 @@ export default function Dashboard() {
       </div>
 
       {/* Gráficos */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         {/* Dona — distribución por estado */}
-        <div className="card col-span-2">
+        <div className="card lg:col-span-2">
           <h3 className="mb-4 font-semibold text-text text-sm">Distribución por estado</h3>
           {dataPie.length === 0 ? (
             <p className="text-sm text-muted text-center py-10">Sin datos</p>
@@ -194,7 +194,7 @@ export default function Dashboard() {
         </div>
 
         {/* Barras — top 5 áreas */}
-        <div className="card col-span-3">
+        <div className="card lg:col-span-3">
           <h3 className="mb-4 font-semibold text-text text-sm">Top 5 áreas por días de ausentismo</h3>
           {dataBarras.length === 0 ? (
             <p className="text-sm text-muted text-center py-10">Sin datos</p>
